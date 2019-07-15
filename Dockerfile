@@ -1,9 +1,6 @@
 FROM centos:7
 MAINTAINER Sean Cline <smcline06@gmail.com>
 
-## --- SUPPORTING FILES ---
-COPY cacti /cacti_install
-
 ## --- CACTI ---
 RUN \
     rpm --rebuilddb && yum clean all && \
@@ -14,10 +11,19 @@ RUN \
         php-gd openssl openldap mod_ssl php-pear net-snmp-libs php-pdo \
         autoconf automake gcc gzip help2man libtool make net-snmp-devel \
         m4 libmysqlclient-devel libmysqlclient openssl-devel dos2unix wget \
-        sendmail mariadb-devel && \
+        sendmail mariadb-devel git && \
 
 ## --- CLEANUP ---
     yum clean all
+
+RUN \
+    cd cacti
+    wget https://www.cacti.net/downloads/cacti-latest.tar.gz && \
+    wget https://www.cacti.net/downloads/spine/cacti-spine-latest.tar.gz && \
+
+
+## --- SUPPORTING FILES ---
+COPY cacti /cacti_install
 
 ## --- CRON ---
 # Fix cron issues - https://github.com/CentOS/CentOS-Dockerfiles/issues/31
@@ -44,6 +50,8 @@ RUN chmod +x /backup.sh
 RUN mkdir /backups
 RUN mkdir /cacti
 RUN mkdir /spine
+
+VOLUME /cacti/plugins
 
 ## -- MISC SETUP --
 RUN echo "ServerName localhost" > /etc/httpd/conf.d/fqdn.conf
